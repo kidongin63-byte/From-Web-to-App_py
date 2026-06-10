@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="폰화면 보기">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>폰화면 보기 - 강의 시연용</title>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --bg2: #1a1a2e;
+    --bg3: #16213e;
+    --accent: #7c6ff7;
+    --accent2: #a78bfa;
+    --text: #f1f0fe;
+    --text2: #a9a6c8;
+    --border: rgba(124,111,247,0.2);
+    --card: rgba(26,26,46,0.95);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --danger: #f87171;
+    --success: #34d399;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: -apple-system, 'Pretendard', 'Segoe UI', sans-serif; color: var(--text); }
+
+  /* ============ APP SHELL ============ */
+  #app { display: flex; height: 100vh; height: 100dvh; }
+
+  /* ============ SIDEBAR (Desktop only) ============ */
+  .sidebar {
+    width: 320px; flex-shrink: 0; background: var(--bg2);
+    border-right: 0.5px solid var(--border);
+    display: flex; flex-direction: column; overflow-y: auto;
+    padding: 20px; gap: 16px;
+  }
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 4px;
+  }
+  .sidebar-logo-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #c084fc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: white;
+  }
+  .sidebar-logo-text { font-size: 18px; font-weight: 700; }
+  .sidebar-logo-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+  /* Mode tabs */
+  .mode-tabs { display: flex; gap: 6px; }
+  .mode-tab {
+    flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: none; color: var(--text2); font-size: 13px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .mode-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .mode-tab:hover:not(.active) { border-color: var(--accent2); color: var(--text); }
+
+  /* URL bar */
+  .url-section { display: flex; flex-direction: column; gap: 8px; }
+  .url-bar {
+    display: flex; gap: 6px;
+  }
+  .url-input {
+    flex: 1; padding: 10px 12px; border-radius: var(--radius-sm);
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-size: 14px; outline: none;
+  }
+  .url-input:focus { border-color: var(--accent); }
+  .url-input::placeholder { color: var(--text2); }
+  .btn {
+    padding: 10px 16px; border: none; border-radius: var(--radius-sm);
+    background: var(--accent); color: white; font-size: 14px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn:active { opacity: 0.7; transform: scale(0.97); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-outline { background: none; border: 1px solid var(--border); color: var(--text2); }
+  .btn-outline:hover { border-color: var(--accent2); color: var(--text); }
+  .btn-outline.active { background: rgba(124,111,247,0.15); border-color: var(--accent); color: var(--accent2); }
+  .btn-danger { background: rgba(248,113,113,0.15); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); }
+
+  /* Bookmarks */
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .bookmarks { display: flex; flex-wrap: wrap; gap: 6px; }
+  .bookmark-btn {
+    padding: 7px 12px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); font-size: 12px; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+  }
+  .bookmark-btn:hover { border-color: var(--accent); background: rgba(124,111,247,0.08); }
+  .bookmark-btn:active { transform: scale(0.95); }
+  .bookmark-icon { font-size: 14px; }
+
+  /* Device selector */
+  .device-options { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* Bookmark manager */
+  .bookmark-add { display: flex; gap: 6px; margin-top: 4px; }
+  .bookmark-add input { flex: 1; padding: 7px 10px; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border); color: var(--text); font-size: 12px; outline: none; }
+  .bookmark-add input:focus { border-color: var(--accent); }
+  .bookmark-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+  .bookmark-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    background: var(--bg); border-radius: var(--radius-sm); font-size: 12px;
+  }
+  .bookmark-item-name { flex: 1; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bookmark-item-url { color: var(--text2); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+  .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 2px; }
+
+  /* ============ MAIN AREA ============ */
+  .main {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, #1a1a3e 0%, var(--bg) 70%);
+    position: relative; overflow: hidden;
+  }
+
+  /* ============ PHONE FRAME ============ */
+  .phone-container {
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .phone-frame {
+    position: relative;
+    background: #1c1c1e;
+    border-radius: 50px;
+    padding: 12px;
+    box-shadow: 0 0 0 2px #3a3a3c, 0 20px 60px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .phone-notch {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 28px; background: #1c1c1e; border-radius: 0 0 18px 18px;
+    z-index: 5;
+  }
+  .phone-notch::after {
+    content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 6px; background: #2c2c2e; border-radius: 3px;
+  }
+  .phone-screen {
+    width: 390px; height: 844px;
+    border-radius: 40px; overflow: hidden;
+    background: white; position: relative;
+  }
+  .phone-screen iframe {
+    width: 100%; height: 100%; border: none;
+    background: white;
+  }
+  .phone-home-bar {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; background: rgba(255,255,255,0.3);
+    border-radius: 3px; z-index: 5;
+  }
+
+  /* Empty state inside phone */
+  .phone-empty {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: linear-gradient(180deg, #f8f7ff 0%, #eee8ff 100%);
+    gap: 12px; padding: 40px;
+  }
+  .phone-empty-icon { font-size: 56px; }
+  .phone-empty-title { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+  .phone-empty-msg { font-size: 14px; color: #666; text-align: center; line-height: 1.6; }
+
+  /* iframe error overlay */
+  .iframe-error {
+    display: none; position: absolute; inset: 0; z-index: 10;
+    background: linear-gradient(180deg, #f8f7ff 0%, #eee8ff 100%);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 40px; text-align: center; border-radius: 40px;
+  }
+  .iframe-error.show { display: flex; }
+  .iframe-error-icon { font-size: 48px; }
+  .iframe-error-title { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+  .iframe-error-msg { font-size: 13px; color: #666; line-height: 1.6; }
+  .iframe-error .btn { margin-top: 8px; }
+
+  /* Scale indicator */
+  .scale-info {
+    position: absolute; bottom: 16px; right: 16px;
+    font-size: 11px; color: var(--text2);
+    background: var(--bg2); padding: 4px 10px;
+    border-radius: 20px; border: 1px solid var(--border);
+  }
+
+  /* ============ MIRROR MODE ============ */
+  .mirror-panel {
+    display: none; width: 100%; height: 100%;
+    flex-direction: column; align-items: center;
+    padding: 40px; gap: 24px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mirror-panel.active { display: flex; }
+  .mirror-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; max-width: 500px; width: 100%;
+  }
+  .mirror-card h3 { font-size: 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .mirror-card p { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
+  .mirror-card ol { padding-left: 20px; font-size: 14px; color: var(--text2); line-height: 2; }
+  .mirror-card ol li::marker { color: var(--accent2); }
+  .mirror-divider { width: 100%; max-width: 500px; border: none; border-top: 1px solid var(--border); }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+    padding: 12px 20px; border-radius: var(--radius-sm);
+    background: var(--bg2); border: 1px solid var(--border);
+    color: var(--text); font-size: 14px; z-index: 9999;
+    transition: transform 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ============ MOBILE LAYOUT ============ */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { flex-direction: column; }
+
+    /* Show mobile header */
+    .mobile-header { display: flex !important; }
+    .mobile-controls { display: flex !important; }
+  }
+
+  @media (min-width: 901px) {
+    .mobile-header { display: none !important; }
+    .mobile-controls { display: none !important; }
+  }
+
+  /* Mobile header */
+  .mobile-header {
+    display: none; width: 100%; background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px; flex-direction: column; gap: 8px;
+    flex-shrink: 0;
+  }
+  .mobile-header-top {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mobile-header-title { font-size: 15px; font-weight: 700; flex: 1; }
+  .mobile-url-bar { display: flex; gap: 6px; }
+  .mobile-url-bar input {
+    flex: 1; padding: 8px 10px; border-radius: var(--radius-sm);
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-size: 13px; outline: none;
+  }
+
+  /* Mobile bottom controls */
+  .mobile-controls {
+    display: none; width: 100%; background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 8px 12px; gap: 6px; justify-content: center;
+    flex-shrink: 0; flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- SIDEBAR (Desktop) -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="icons/icon-192.png" width="36" height="36" style="border-radius:10px" alt="KDI">
+      <div>
+        <div class="sidebar-logo-text">폰화면 보기</div>
+        <div class="sidebar-logo-sub">강의 시연용 도우미</div>
+      </div>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="mode-tabs" style="flex-wrap:wrap">
+      <button class="mode-tab active" onclick="switchMode('viewer')" id="mode-viewer">📱 폰화면</button>
+      <button class="mode-tab" onclick="switchMode('install')" id="mode-install">📲 앱 설치</button>
+      <button class="mode-tab" onclick="switchMode('mirror')" id="mode-mirror">🔗 폰 띄우기</button>
+      <button class="mode-tab" onclick="switchMode('guide')" id="mode-guide">📖 사용법</button>
+    </div>
+
+    <!-- Viewer Controls -->
+    <div id="viewer-controls">
+      <div class="url-section">
+        <span class="section-label">사이트 주소</span>
+        <div class="url-bar">
+          <input type="url" class="url-input" id="url-input" placeholder="주소 입력 (예: gemini.google.com)"
+                 onkeydown="if(event.key==='Enter')loadURL()" />
+          <button class="btn" onclick="loadURL()">열기</button>
+        </div>
+      </div>
+
+      <div>
+        <span class="section-label">자주 쓰는 도구</span>
+        <div class="bookmarks" id="bookmarks"></div>
+      </div>
+
+      <div>
+        <span class="section-label">2개 비교하기</span>
+        <div style="padding:10px;background:rgba(124,111,247,0.1);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.7">
+          💡 도구를 2개 클릭하면 탭 2개가 열려요.<br>
+          <strong style="color:var(--accent2)">탭을 드래그해서 나란히 배치</strong>하면 비교할 수 있어요.
+        </div>
+      </div>
+
+      <div>
+        <span class="section-label">폰 종류</span>
+        <div class="device-options" id="device-options"></div>
+      </div>
+
+      <div>
+        <span class="section-label">화면 돌리기</span>
+        <div class="device-options">
+          <button class="btn-sm btn-outline active" id="orient-portrait" onclick="setOrientation('portrait')">📱 세로</button>
+          <button class="btn-sm btn-outline" id="orient-landscape" onclick="setOrientation('landscape')">📱 가로</button>
+        </div>
+      </div>
+
+      <div>
+        <span class="section-label">도구 목록 편집</span>
+        <div class="bookmark-add">
+          <input id="bm-name" placeholder="도구 이름" />
+          <input id="bm-url" placeholder="사이트 주소" />
+          <button class="btn btn-sm" onclick="addBookmark()">넣기</button>
+        </div>
+        <div class="bookmark-list" id="bookmark-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main" id="main-area">
+
+    <!-- Mobile Header (shown on small screens) -->
+    <div class="mobile-header">
+      <div class="mobile-header-top">
+        <span class="mobile-header-title">📱 폰화면 보기</span>
+        <button class="btn btn-sm btn-outline" onclick="toggleMobileMode()">다음 메뉴 ▶</button>
+      </div>
+      <div class="mobile-url-bar">
+        <input type="url" id="mobile-url-input" placeholder="사이트 주소 입력..." onkeydown="if(event.key==='Enter')loadURLMobile()" />
+        <button class="btn btn-sm" onclick="loadURLMobile()">열기</button>
+      </div>
+    </div>
+
+    <!-- Viewer Mode -->
+    <div class="phone-container" id="phone-container">
+      <div class="phone-frame" id="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" id="phone-screen">
+          <div class="phone-empty" id="phone-empty">
+            <img src="icons/icon-512.png" width="160" height="160" style="border-radius:24px">
+            <div style="font-size:18px;color:#444;font-weight:600;margin-top:8px">KDI Mobile Viewer</div>
+            <div style="font-size:14px;color:#999;margin-top:4px">왼쪽에서 도구를 선택하세요</div>
+          </div>
+          <iframe id="phone-iframe" src="" style="display:none" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"></iframe>
+          <div class="iframe-error" id="iframe-error">
+            <div class="iframe-error-icon">🚫</div>
+            <div class="iframe-error-title">여기서는 열 수 없는 사이트예요</div>
+            <div class="iframe-error-msg" id="iframe-error-msg">이 사이트는 보안 설정 때문에<br>폰 화면 안에서 바로 볼 수 없어요.</div>
+            <button class="btn" onclick="openInPopup()">📱 폰 크기 새 창으로 열기</button>
+            <button class="btn btn-outline" onclick="openInNewTab()" style="margin-top:4px">↗ 그냥 새 탭으로 열기</button>
+          </div>
+        </div>
+        <div class="phone-home-bar"></div>
+      </div>
+    </div>
+
+    <!-- Mirror Mode -->
+    <div class="mirror-panel" id="mirror-panel">
+      <div class="mirror-card">
+        <h3>🍎 아이폰 화면을 PC에 띄우기</h3>
+        <p style="margin-bottom:10px"><strong>먼저 PC에 수신 프로그램을 설치하세요:</strong></p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <a href="https://www.lonelyscreen.com/download.html" target="_blank" class="btn btn-sm" style="text-decoration:none">📥 LonelyScreen 설치 (무료)</a>
+          <a href="https://www.airserver.com/download" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none">📥 AirServer 설치 (유료)</a>
+        </div>
+        <p style="margin-bottom:8px"><strong>설치 후 아이폰 연결 순서:</strong></p>
+        <ol>
+          <li>PC에서 LonelyScreen (또는 AirServer) <strong>실행</strong></li>
+          <li>아이폰과 PC를 <strong>같은 와이파이</strong>에 연결</li>
+          <li>아이폰 오른쪽 위를 아래로 쓸어내려 <strong>제어센터</strong> 열기</li>
+          <li><strong>"화면 미러링"</strong> 버튼 누르기</li>
+          <li>목록에서 <strong>PC 이름</strong> 선택하면 끝!</li>
+          <li>프로젝터에 아이폰 화면이 그대로 나와요</li>
+        </ol>
+      </div>
+
+      <hr class="mirror-divider">
+
+      <div class="mirror-card">
+        <h3>🤖 안드로이드 화면을 PC에 띄우기</h3>
+        <p style="margin-bottom:10px"><strong>방법 1: USB 케이블 연결 (가장 안정적, 추천!)</strong></p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <a href="https://github.com/Genymobile/scrcpy/releases/latest" target="_blank" class="btn btn-sm" style="text-decoration:none">📥 scrcpy 설치 (무료)</a>
+        </div>
+        <ol>
+          <li>위 버튼 클릭 → <strong>scrcpy-win64-vX.X.zip</strong> 다운로드</li>
+          <li>압축 풀기 → <strong>scrcpy.exe</strong> 실행</li>
+          <li>USB 케이블로 폰과 PC 연결</li>
+          <li>폰에서 "USB 디버깅 허용" 누르기</li>
+          <li>PC에 폰 화면이 바로 나와요!</li>
+        </ol>
+
+        <p style="margin-top:16px;margin-bottom:8px"><strong>방법 2: 무선 연결 (삼성 등)</strong></p>
+        <ol>
+          <li>화면 위에서 아래로 내려서 빠른 설정 열기</li>
+          <li><strong>"Smart View"</strong> 또는 <strong>"화면 미러링"</strong> 누르기</li>
+          <li>목록에서 연결할 기기 선택하면 끝!</li>
+        </ol>
+      </div>
+
+      <hr class="mirror-divider">
+
+      <div class="mirror-card">
+        <h3>💻 추천 미러링 프로그램 (클릭하면 설치 페이지로 이동)</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:10px">
+            <span style="font-size:24px">📱</span>
+            <div style="flex:1">
+              <strong>LetsView</strong> <span style="font-size:11px;color:var(--success)">(무료)</span><br>
+              <span style="font-size:12px;color:var(--text2)">아이폰 + 안드로이드 모두 지원. 무선 연결</span>
+            </div>
+            <a href="https://letsview.com/downloads" target="_blank" class="btn btn-sm" style="text-decoration:none">설치</a>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:10px">
+            <span style="font-size:24px">🔗</span>
+            <div style="flex:1">
+              <strong>ApowerMirror</strong><br>
+              <span style="font-size:12px;color:var(--text2)">USB + 와이파이 모두 지원. 아이폰/안드로이드</span>
+            </div>
+            <a href="https://www.apowersoft.com/phone-mirror" target="_blank" class="btn btn-sm" style="text-decoration:none">설치</a>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:10px">
+            <span style="font-size:24px">⚡</span>
+            <div style="flex:1">
+              <strong>scrcpy</strong> <span style="font-size:11px;color:var(--success)">(무료, 가장 빠름)</span><br>
+              <span style="font-size:12px;color:var(--text2)">안드로이드 전용. USB 연결. 지연 없음</span>
+            </div>
+            <a href="https://github.com/Genymobile/scrcpy/releases/latest" target="_blank" class="btn btn-sm" style="text-decoration:none">설치</a>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:10px">
+            <span style="font-size:24px">🪟</span>
+            <div style="flex:1">
+              <strong>윈도우 기본 기능</strong> <span style="font-size:11px;color:var(--success)">(설치 불필요)</span><br>
+              <span style="font-size:12px;color:var(--text2)">설정 → 시스템 → 이 PC에 화면 표시</span>
+            </div>
+            <a href="ms-settings:project" class="btn btn-sm btn-outline" style="text-decoration:none">열기</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== APP INSTALL GUIDE PANEL ========== -->
+    <div class="mirror-panel" id="install-panel">
+      <div class="mirror-card" style="max-width:600px">
+        <h3>📲 모바일 앱 설치 안내</h3>
+        <p><strong>수강생은 폰 카메라로 QR코드를 스캔하면 바로 앱 스토어가 열립니다.</strong></p>
+        <div style="margin-top:8px;padding:10px;background:rgba(124,111,247,0.1);border-radius:10px;font-size:13px;color:var(--text2);line-height:1.7">
+          💡 이 화면은 프로젝터로 보여주기용입니다. 강사가 PC에서 버튼을 누르면 웹 페이지가 열리지만,<br>
+          <strong>수강생이 폰으로 QR코드를 스캔하면 Play Store / App Store 앱이 바로 열려요.</strong>
+        </div>
+      </div>
+
+      <div class="mirror-card" style="max-width:600px">
+        <h3 style="font-size:20px"><img src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=64" width="28" height="28" style="vertical-align:middle;border-radius:6px;margin-right:8px">Gemini</h3>
+        <p>Google AI 챗봇 - 질문, 글쓰기, 이미지 분석</p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://play.google.com/store/apps/details?id=com.google.android.apps.bard" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🤖 안드로이드</div>
+          </div>
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://apps.apple.com/app/google-gemini/id6477489729" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🍎 아이폰</div>
+          </div>
+          <div style="flex:1;min-width:150px;font-size:14px;color:var(--text2);line-height:2">
+            <strong style="color:var(--text)">폰에서 설치하기:</strong><br>
+            1. 폰 카메라로 QR 스캔<br>
+            2. 앱 스토어에서 "설치" 누르기<br>
+            3. 앱 열기 → Google 로그인
+          </div>
+        </div>
+      </div>
+
+      <div class="mirror-card" style="max-width:600px">
+        <h3 style="font-size:20px"><img src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=64" width="28" height="28" style="vertical-align:middle;border-radius:6px;margin-right:8px">ChatGPT</h3>
+        <p>OpenAI AI 챗봇 - 대화, 글쓰기, 코딩, 이미지 생성</p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://play.google.com/store/apps/details?id=com.openai.chatgpt" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🤖 안드로이드</div>
+          </div>
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://apps.apple.com/app/chatgpt/id6448311069" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🍎 아이폰</div>
+          </div>
+          <div style="flex:1;min-width:150px;font-size:14px;color:var(--text2);line-height:2">
+            <strong style="color:var(--text)">폰에서 설치하기:</strong><br>
+            1. 폰 카메라로 QR 스캔<br>
+            2. 앱 스토어에서 "설치" 누르기<br>
+            3. 앱 열기 → 계정 만들기/로그인
+          </div>
+        </div>
+      </div>
+
+      <div class="mirror-card" style="max-width:600px">
+        <h3 style="font-size:20px"><img src="https://www.google.com/s2/favicons?domain=suno.com&sz=64" width="28" height="28" style="vertical-align:middle;border-radius:6px;margin-right:8px">Suno</h3>
+        <p>AI 음악 만들기 - 가사만 입력하면 노래 완성</p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://play.google.com/store/apps/details?id=com.suno.android" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🤖 안드로이드</div>
+          </div>
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://apps.apple.com/app/suno-make-and-explore-music/id6480136315" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🍎 아이폰</div>
+          </div>
+          <div style="flex:1;min-width:150px;font-size:14px;color:var(--text2);line-height:2">
+            <strong style="color:var(--text)">폰에서 설치하기:</strong><br>
+            1. 폰 카메라로 QR 스캔<br>
+            2. 앱 스토어에서 "설치" 누르기<br>
+            3. 앱 열기 → Google/Apple 로그인
+          </div>
+        </div>
+      </div>
+
+      <div class="mirror-card" style="max-width:600px">
+        <h3 style="font-size:20px"><img src="https://www.google.com/s2/favicons?domain=www.canva.com&sz=64" width="28" height="28" style="vertical-align:middle;border-radius:6px;margin-right:8px">Canva</h3>
+        <p>디자인 도구 - 발표자료, 포스터, 영상 편집</p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://play.google.com/store/apps/details?id=com.canva.editor" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🤖 안드로이드</div>
+          </div>
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://apps.apple.com/app/canva-design-art-ai-editor/id897446215" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🍎 아이폰</div>
+          </div>
+          <div style="flex:1;min-width:150px;font-size:14px;color:var(--text2);line-height:2">
+            <strong style="color:var(--text)">폰에서 설치하기:</strong><br>
+            1. 폰 카메라로 QR 스캔<br>
+            2. 앱 스토어에서 "설치" 누르기<br>
+            3. 앱 열기 → Google 로그인
+          </div>
+        </div>
+      </div>
+
+      <div class="mirror-card" style="max-width:600px">
+        <h3 style="font-size:20px"><img src="https://www.google.com/s2/favicons?domain=www.perplexity.ai&sz=64" width="28" height="28" style="vertical-align:middle;border-radius:6px;margin-right:8px">Perplexity</h3>
+        <p>AI 검색 엔진 - 출처가 명확한 답변 제공</p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://play.google.com/store/apps/details?id=ai.perplexity.app.android" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🤖 안드로이드</div>
+          </div>
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://apps.apple.com/app/perplexity-ask-anything/id1668000334" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🍎 아이폰</div>
+          </div>
+          <div style="flex:1;min-width:150px;font-size:14px;color:var(--text2);line-height:2">
+            <strong style="color:var(--text)">폰에서 설치하기:</strong><br>
+            1. 폰 카메라로 QR 스캔<br>
+            2. 앱 스토어에서 "설치" 누르기<br>
+            3. 앱 열기 → Google/Apple 로그인
+          </div>
+        </div>
+      </div>
+
+      <div class="mirror-card" style="max-width:600px">
+        <h3 style="font-size:20px"><img src="https://www.google.com/s2/favicons?domain=gamma.app&sz=64" width="28" height="28" style="vertical-align:middle;border-radius:6px;margin-right:8px">Gamma</h3>
+        <p>AI 발표자료 만들기 - <strong>모바일 앱 없음 (웹만 가능)</strong></p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://gamma.app" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--success);margin-top:6px;font-weight:600">🌐 웹 접속 QR</div>
+          </div>
+          <div style="flex:1;min-width:150px;font-size:14px;color:var(--text2);line-height:2">
+            <strong style="color:var(--text)">폰에서 접속하기:</strong><br>
+            1. 폰 카메라로 QR 스캔<br>
+            2. 폰 브라우저에서 gamma.app 열림<br>
+            3. Google 로그인 → 사용 시작
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== GUIDE PANEL (사용법 + 핫스팟 + 노트북 활용) ========== -->
+    <div class="mirror-panel" id="guide-panel">
+
+      <div class="mirror-card" style="max-width:550px">
+        <h3>💻 이 프로그램 활용법</h3>
+        <p style="font-size:15px;line-height:1.8;color:var(--text)">
+          이 프로그램은 <strong>노트북/PC 브라우저에서 실행</strong>합니다.<br>
+          별도 설치가 필요 없고, 파일을 열기만 하면 바로 사용할 수 있어요.
+        </p>
+        <div style="margin-top:14px;font-size:14px;color:var(--text2);line-height:2">
+          <strong style="color:var(--accent2)">방법 1: 파일로 바로 열기</strong><br>
+          1. 이 폴더의 <strong>index.html</strong> 파일을 더블클릭<br>
+          2. 브라우저에서 바로 열림 → 프로젝터에 연결해서 사용<br><br>
+          <strong style="color:var(--accent2)">방법 2: 인터넷에 올려서 쓰기 (추천)</strong><br>
+          1. <strong>Netlify</strong>(무료)에 이 폴더를 올리면 주소가 생김<br>
+          2. 어떤 PC에서든 그 주소로 접속하면 바로 사용 가능<br>
+          3. 올리는 방법: netlify.com 가입 → "Add new site" → 폴더 드래그
+        </div>
+      </div>
+
+      <hr class="mirror-divider" style="max-width:550px">
+
+      <div class="mirror-card" style="max-width:550px">
+        <h3>🖥️ 강의실에서 노트북 세팅 순서</h3>
+        <ol style="line-height:2.2">
+          <li>노트북을 <strong>프로젝터/대형 모니터</strong>에 연결</li>
+          <li>브라우저(Chrome 추천)에서 이 프로그램 열기</li>
+          <li>왼쪽 패널에서 <strong>"📲 앱 설치"</strong> 탭 선택</li>
+          <li>수강생에게 프로젝터 화면을 보면서 앱 설치하도록 안내</li>
+          <li>설치 완료 후 <strong>"📱 폰화면"</strong> 탭으로 전환</li>
+          <li>"자주 쓰는 도구"에서 도구 선택 → 폰 크기 새 창이 열림</li>
+          <li>열린 새 창을 프로젝터로 보여주며 실습 진행</li>
+        </ol>
+      </div>
+
+      <hr class="mirror-divider" style="max-width:550px">
+
+      <div class="mirror-card" style="max-width:550px">
+        <h3>📱 강의 중 폰으로 직접 시연할 때</h3>
+        <ol style="line-height:2.2">
+          <li>왼쪽 패널에서 <strong>"🔗 폰 띄우기"</strong> 탭 선택</li>
+          <li>안내에 따라 폰 화면을 노트북에 미러링</li>
+          <li>프로젝터에 폰 화면이 그대로 나옴</li>
+          <li>강사가 폰에서 직접 조작 → 수강생이 보고 따라함</li>
+        </ol>
+      </div>
+
+      <hr class="mirror-divider" style="max-width:550px">
+
+      <div class="mirror-card" style="max-width:550px">
+        <h3>📶 와이파이가 안 될 때 - 핫스팟 연결</h3>
+        <p>강의실 보안 와이파이가 연결 안 되거나, 인터넷이 안 될 때<br>
+        <strong>강사 폰의 핫스팟</strong>으로 수강생 전원이 연결할 수 있어요.</p>
+
+        <div style="margin-top:14px">
+          <strong style="color:var(--accent2)">🍎 아이폰 핫스팟 켜기</strong>
+          <ol style="line-height:2">
+            <li><strong>설정</strong> → <strong>개인용 핫스팟</strong> 열기</li>
+            <li><strong>"다른 사람의 연결 허용"</strong> 켜기</li>
+            <li>와이파이 이름과 암호가 화면에 표시됨</li>
+            <li>수강생에게 이름/암호를 알려주고 와이파이 연결하도록 안내</li>
+          </ol>
+        </div>
+
+        <div style="margin-top:14px">
+          <strong style="color:var(--accent2)">🤖 안드로이드 핫스팟 켜기</strong>
+          <ol style="line-height:2">
+            <li>화면 위에서 아래로 내려서 <strong>빠른 설정</strong> 열기</li>
+            <li><strong>"모바일 핫스팟"</strong> 또는 <strong>"테더링"</strong> 버튼 누르기</li>
+            <li>또는: 설정 → 연결 → 모바일 핫스팟 및 테더링</li>
+            <li>핫스팟 이름과 비밀번호를 수강생에게 안내</li>
+          </ol>
+        </div>
+
+        <div style="margin-top:14px;padding:12px;background:rgba(124,111,247,0.1);border-radius:10px">
+          <strong style="color:var(--accent2)">💡 핫스팟 사용 팁</strong>
+          <ul style="margin-top:6px;padding-left:18px;font-size:13px;color:var(--text2);line-height:1.8">
+            <li>데이터 요금제가 충분한지 먼저 확인하세요</li>
+            <li>수강생이 10명 이상이면 데이터 소모가 클 수 있어요</li>
+            <li>영상 재생은 피하고, 텍스트 위주 실습을 추천해요</li>
+            <li>무제한 요금제라면 걱정 없이 사용 가능!</li>
+            <li>보조 배터리를 준비하면 더 안심이에요</li>
+          </ul>
+        </div>
+      </div>
+
+      <hr class="mirror-divider" style="max-width:550px">
+
+      <div class="mirror-card" style="max-width:550px">
+        <h3>📶 핫스팟으로 노트북도 같이 쓰기</h3>
+        <p>강사 폰 핫스팟에 <strong>노트북도 연결</strong>하면,<br>
+        노트북에서 이 프로그램을 쓰면서 인터넷도 사용할 수 있어요.</p>
+        <ol style="line-height:2.2">
+          <li>강사 폰에서 핫스팟 켜기 (위 방법 참고)</li>
+          <li>노트북 와이파이에서 <strong>핫스팟 이름 찾아서 연결</strong></li>
+          <li>노트북 브라우저에서 이 프로그램 열기</li>
+          <li>수강생도 같은 핫스팟에 연결</li>
+          <li>모두 인터넷 사용 가능! → 실습 진행</li>
+        </ol>
+        <div style="margin-top:10px;padding:10px;background:rgba(52,211,153,0.1);border-radius:10px">
+          <strong style="color:var(--success)">✅ 요약:</strong>
+          <span style="font-size:13px;color:var(--text2)"> 핫스팟 하나로 강사 노트북 + 수강생 폰 전부 인터넷 연결 가능</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile bottom controls -->
+    <div class="mobile-controls">
+      <button class="btn btn-sm btn-outline active" onclick="setOrientation('portrait')">세로</button>
+      <button class="btn btn-sm btn-outline" onclick="setOrientation('landscape')">가로</button>
+    </div>
+
+    <div class="scale-info" id="scale-info"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== DEVICES ==========
+const DEVICES = [
+  { name: 'iPhone 14', w: 390, h: 844, radius: 47, notch: true },
+  { name: 'iPhone SE', w: 375, h: 667, radius: 0, notch: false },
+  { name: 'Galaxy S24', w: 360, h: 780, radius: 30, notch: false },
+  { name: 'iPad Mini', w: 744, h: 1133, radius: 18, notch: false },
+];
+
+// Google favicon API로 실제 브랜드 아이콘 가져오기
+function getFavicon(domain) {
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+}
+
+const DEFAULT_BOOKMARKS = [
+  // 폰화면 탭: 웹 접속용 (도구 사용하기)
+  { name: 'Gemini', url: 'https://gemini.google.com', icon: '', favicon: 'gemini.google.com' },
+  { name: 'ChatGPT', url: 'https://chatgpt.com', icon: '', favicon: 'chatgpt.com' },
+  { name: 'Claude', url: 'https://claude.ai', icon: '', favicon: 'claude.ai' },
+  { name: 'Suno', url: 'https://suno.com', icon: '', favicon: 'suno.com' },
+  { name: 'Canva', url: 'https://www.canva.com', icon: '', favicon: 'www.canva.com' },
+  { name: 'Gamma', url: 'https://gamma.app', icon: '', favicon: 'gamma.app' },
+  { name: 'Perplexity', url: 'https://www.perplexity.ai', icon: '', favicon: 'www.perplexity.ai' },
+  { name: 'Midjourney', url: 'https://www.midjourney.com', icon: '', favicon: 'www.midjourney.com' },
+];
+
+// ========== STATE ==========
+let state = {
+  currentURL: '',
+  currentDevice: 0,
+  orientation: 'portrait',
+  mode: 'viewer',
+  openMode: 'popup',
+  bookmarks: [...DEFAULT_BOOKMARKS],
+};
+
+function saveState() {
+  try { localStorage.setItem('mobileViewerState', JSON.stringify(state)); } catch(e) {}
+}
+function loadState() {
+  try {
+    const s = localStorage.getItem('mobileViewerState');
+    if (s) {
+      state = { ...state, ...JSON.parse(s) };
+      // 이전 버전 북마크에 favicon 필드 자동 보완
+      state.bookmarks = state.bookmarks.map(b => {
+        if (!b.favicon && b.url) {
+          try { b.favicon = new URL(b.url).hostname; } catch(e) {}
+        }
+        return b;
+      });
+    }
+  } catch(e) {}
+}
+
+// ========== SANITIZE ==========
+function sanitize(str) {
+  const el = document.createElement('div');
+  el.textContent = str;
+  return el.innerHTML;
+}
+
+function isValidURL(str) {
+  try {
+    const url = new URL(str);
+    return ['http:', 'https:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
+// ========== MODE SWITCHING ==========
+function switchMode(mode) {
+  state.mode = mode;
+  const modes = ['viewer', 'install', 'mirror', 'guide'];
+  modes.forEach(m => {
+    const tab = document.getElementById('mode-' + m);
+    if (tab) tab.classList.toggle('active', m === mode);
+  });
+  document.getElementById('viewer-controls').style.display = mode === 'viewer' ? '' : 'none';
+  document.getElementById('phone-container').style.display = mode === 'viewer' ? '' : 'none';
+  document.getElementById('mirror-panel').classList.toggle('active', mode === 'mirror');
+  document.getElementById('install-panel').classList.toggle('active', mode === 'install');
+  document.getElementById('guide-panel').classList.toggle('active', mode === 'guide');
+  document.getElementById('scale-info').style.display = mode === 'viewer' ? '' : 'none';
+  saveState();
+}
+
+function toggleMobileMode() {
+  const modeOrder = ['viewer', 'install', 'mirror', 'guide'];
+  const idx = modeOrder.indexOf(state.mode);
+  switchMode(modeOrder[(idx + 1) % modeOrder.length]);
+}
+
+// ========== URL LOADING ==========
+function loadURL() {
+  let url = document.getElementById('url-input').value.trim();
+  if (!url) return;
+  if (!url.startsWith('http')) url = 'https://' + url;
+  if (!isValidURL(url)) { showToast('주소가 올바르지 않아요'); return; }
+  navigateTo(url);
+}
+
+function loadURLMobile() {
+  let url = document.getElementById('mobile-url-input').value.trim();
+  if (!url) return;
+  if (!url.startsWith('http')) url = 'https://' + url;
+  if (!isValidURL(url)) { showToast('주소가 올바르지 않아요'); return; }
+  navigateTo(url);
+}
+
+function navigateTo(url) {
+  state.currentURL = url;
+  saveState();
+
+  // Set URL inputs
+  document.getElementById('url-input').value = url;
+  const mobileInput = document.getElementById('mobile-url-input');
+  if (mobileInput) mobileInput.value = url;
+
+  if (state.openMode === 'popup') {
+    openInPopup();
+    // showPhonePreview는 openInPopup 안에서 호출
+  } else {
+    // 프레임 안에 열기 시도
+    loadInFrame(url);
+  }
+}
+
+function loadInFrame(url) {
+  const iframe = document.getElementById('phone-iframe');
+  const empty = document.getElementById('phone-empty');
+  const error = document.getElementById('iframe-error');
+
+  empty.style.display = 'none';
+  error.classList.remove('show');
+  iframe.style.display = 'block';
+  iframe.src = url;
+
+  // Detect iframe load failure (heuristic)
+  let loaded = false;
+  iframe.onload = () => { loaded = true; };
+  setTimeout(() => {
+    if (!loaded) {
+      showIframeError(url);
+    }
+  }, 5000);
+}
+
+function showPhonePreview(url) {
+  const container = document.getElementById('phone-container');
+  container.style.transform = 'none';
+
+  // 열린 도구 아이콘 카드 만들기
+  let toolCards = '';
+  openedTools.forEach(function(t, i) {
+    const hostname = new URL(t.url).hostname.replace('www.','');
+    const favicon = 'https://www.google.com/s2/favicons?domain=' + new URL(t.url).hostname + '&sz=128';
+    const name = hostname.split('.')[0];
+    const capName = name.charAt(0).toUpperCase() + name.slice(1);
+    toolCards += `
+      <div onclick="bringPopupToFront(${i})" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 24px;background:var(--card);border:1px solid var(--border);border-radius:16px;min-width:140px;transition:transform 0.15s">
+        <img src="${favicon}" width="48" height="48" style="border-radius:12px">
+        <span style="font-size:15px;color:var(--text);font-weight:600">${capName}</span>
+        <span style="font-size:11px;color:var(--accent2)">클릭하면 앞으로</span>
+      </div>`;
+  });
+
+  container.innerHTML = `
+    <div style="text-align:center;color:var(--text2)">
+      <img src="icons/icon-512.png" width="80" height="80" style="border-radius:18px;margin-bottom:12px">
+      <div style="font-size:16px;color:var(--text);font-weight:600;margin-bottom:16px">열린 도구 (${openedTools.length}개)</div>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+        ${toolCards}
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:var(--text2)">도구를 클릭하면 해당 창이 앞으로 올라와요</div>
+    </div>
+  `;
+}
+
+function bringPopupToFront(index) {
+  if (openedTools[index] && openedTools[index].win && !openedTools[index].win.closed) {
+    openedTools[index].win.focus();
+    showToast(new URL(openedTools[index].url).hostname + ' 창을 앞으로 가져왔어요');
+  }
+}
+
+function showIframeError(url) {
+  const error = document.getElementById('iframe-error');
+  const hostname = new URL(url).hostname;
+  document.getElementById('iframe-error-msg').innerHTML =
+    sanitize(hostname) + ' 사이트는 보안 설정 때문에<br>폰 화면 안에서 바로 볼 수 없어요.';
+  error.classList.add('show');
+}
+
+let popupCount = 0;
+let openedTools = []; // { win, url }
+
+function openInPopup() {
+  if (!state.currentURL) return;
+
+  // 닫힌 창 정리
+  openedTools = openedTools.filter(function(t) { return t.win && !t.win.closed; });
+
+  // 최대 2개 제한
+  if (openedTools.length >= 2) {
+    try { openedTools[0].win.close(); } catch(e) {}
+    openedTools.shift();
+  }
+
+  popupCount++;
+  const d = DEVICES[state.currentDevice];
+  const w = state.orientation === 'portrait' ? d.w : d.h;
+  const h = state.orientation === 'portrait' ? d.h : d.w;
+  const result = window.open(state.currentURL, 'mv_' + popupCount,
+    'width=' + w + ',height=' + h + ',menubar=no,toolbar=no,location=yes,scrollbars=yes');
+  if (result) {
+    openedTools.push({ win: result, url: state.currentURL });
+    showToast('폰 크기 창이 열렸어요 (' + openedTools.length + '/2)');
+
+    // 열린 도구 목록 갱신 (openedTools 추가 후 호출)
+    showPhonePreview(state.currentURL);
+
+    // 모든 팝업을 앞으로 가져오기
+    setTimeout(function() {
+      openedTools.forEach(function(t) {
+        try { if (!t.win.closed) t.win.focus(); } catch(e) {}
+      });
+    }, 300);
+  } else {
+    showToast('팝업이 차단되었어요! 팝업 허용 후 다시 클릭');
+    popupCount--;
+  }
+}
+
+
+function openInNewTab() {
+  if (!state.currentURL) return;
+  window.open(state.currentURL, '_blank');
+}
+
+// ========== OPEN MODE ==========
+function setOpenMode(mode) {
+  state.openMode = mode;
+  saveState();
+}
+
+// ========== DEVICE SELECTION ==========
+function renderDevices() {
+  const container = document.getElementById('device-options');
+  container.innerHTML = DEVICES.map((d, i) =>
+    `<button class="btn-sm btn-outline ${i === state.currentDevice ? 'active' : ''}"
+             onclick="selectDevice(${i})">${sanitize(d.name)}</button>`
+  ).join('');
+}
+
+function selectDevice(idx) {
+  state.currentDevice = idx;
+  saveState();
+  renderDevices();
+  updatePhoneFrame();
+}
+
+// ========== ORIENTATION ==========
+function setOrientation(o) {
+  state.orientation = o;
+  saveState();
+  document.getElementById('orient-portrait').classList.toggle('active', o === 'portrait');
+  document.getElementById('orient-landscape').classList.toggle('active', o === 'landscape');
+  updatePhoneFrame();
+}
+
+// ========== PHONE FRAME ==========
+function updatePhoneFrame() {
+  const d = DEVICES[state.currentDevice];
+  const screen = document.getElementById('phone-screen');
+  const frame = document.getElementById('phone-frame');
+  const notch = frame.querySelector('.phone-notch');
+  const homeBar = frame.querySelector('.phone-home-bar');
+
+  let w, h;
+  if (state.orientation === 'portrait') {
+    w = d.w; h = d.h;
+  } else {
+    w = d.h; h = d.w;
+  }
+
+  screen.style.width = w + 'px';
+  screen.style.height = h + 'px';
+  screen.style.borderRadius = d.radius + 'px';
+
+  // Notch visibility
+  notch.style.display = d.notch && state.orientation === 'portrait' ? '' : 'none';
+  homeBar.style.display = d.notch ? '' : 'none';
+
+  // Scale to fit
+  autoScale();
+}
+
+function autoScale() {
+  const container = document.getElementById('phone-container');
+  const frame = document.getElementById('phone-frame');
+  const main = document.getElementById('main-area');
+
+  const mainRect = main.getBoundingClientRect();
+  const availW = mainRect.width - 60;
+  const availH = mainRect.height - 60;
+
+  const d = DEVICES[state.currentDevice];
+  let fw = (state.orientation === 'portrait' ? d.w : d.h) + 24;
+  let fh = (state.orientation === 'portrait' ? d.h : d.w) + 24;
+
+  const scaleW = availW / fw;
+  const scaleH = availH / fh;
+  const scale = Math.min(scaleW, scaleH, 1);
+
+  container.style.transform = `scale(${scale})`;
+  container.style.transformOrigin = 'center center';
+
+  document.getElementById('scale-info').textContent =
+    `${DEVICES[state.currentDevice].name} · ${state.orientation === 'portrait' ? '세로 화면' : '가로 화면'} · ${Math.round(scale * 100)}%`;
+}
+
+// ========== BOOKMARKS ==========
+function getIconHTML(b, size) {
+  // favicon 도메인이 있으면 실제 브랜드 아이콘 사용
+  const domain = b.favicon || new URL(b.url).hostname;
+  const sz = size || 20;
+  return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64"
+    width="${sz}" height="${sz}" style="border-radius:4px;vertical-align:middle"
+    onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"
+    /><span style="display:none">${b.icon || '🔗'}</span>`;
+}
+
+function renderBookmarks() {
+  const container = document.getElementById('bookmarks');
+  container.innerHTML = state.bookmarks.map((b, i) =>
+    `<button class="bookmark-btn" onclick="bookmarkClick(${i})" title="${sanitize(b.url)}">
+      ${getIconHTML(b, 18)}
+      ${sanitize(b.name)}
+    </button>`
+  ).join('');
+
+  // Render bookmark list in manager
+  const list = document.getElementById('bookmark-list');
+  list.innerHTML = state.bookmarks.map((b, i) =>
+    `<div class="bookmark-item">
+      ${getIconHTML(b, 16)}
+      <span class="bookmark-item-name">${sanitize(b.name)}</span>
+      <span class="bookmark-item-url">${sanitize(b.url)}</span>
+      <button class="btn-del" onclick="deleteBookmark(${i})" title="빼기">×</button>
+    </div>`
+  ).join('');
+}
+
+function bookmarkClick(idx) {
+  const b = state.bookmarks[idx];
+  document.getElementById('url-input').value = b.url;
+  navigateTo(b.url);
+}
+
+function addBookmark() {
+  const name = document.getElementById('bm-name').value.trim();
+  let url = document.getElementById('bm-url').value.trim();
+  if (!name || !url) { showToast('도구 이름과 주소를 입력해주세요'); return; }
+  if (!url.startsWith('http')) url = 'https://' + url;
+  if (!isValidURL(url)) { showToast('주소가 올바르지 않아요'); return; }
+  const domain = new URL(url).hostname;
+  state.bookmarks.push({ name, url, icon: '🔗', favicon: domain });
+  saveState();
+  renderBookmarks();
+  document.getElementById('bm-name').value = '';
+  document.getElementById('bm-url').value = '';
+  showToast('도구가 추가되었어요');
+}
+
+function deleteBookmark(idx) {
+  state.bookmarks.splice(idx, 1);
+  saveState();
+  renderBookmarks();
+  showToast('삭제했어요');
+}
+
+// ========== TOAST ==========
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ========== INIT ==========
+loadState();
+// 북마크를 항상 최신 기본값으로 교체 (v7)
+if (!state._bmVer || state._bmVer < 7) {
+  state.bookmarks = [...DEFAULT_BOOKMARKS];
+  state._bmVer = 7;
+  saveState();
+}
+state.openMode = 'popup'; // 항상 폰 크기 새 창으로 열기
+renderDevices();
+renderBookmarks();
+updatePhoneFrame();
+switchMode(state.mode);
+
+// Restore URL if any
+if (state.currentURL) {
+  document.getElementById('url-input').value = state.currentURL;
+}
+
+// Auto-resize on window resize
+window.addEventListener('resize', () => {
+  if (state.mode === 'viewer') autoScale();
+});
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
