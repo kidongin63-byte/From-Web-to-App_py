@@ -654,6 +654,24 @@
         </div>
       </div>
 
+      <div class="mirror-card" style="max-width:600px">
+        <h3 style="font-size:20px"><img src="https://www.google.com/s2/favicons?domain=flow.google.com&sz=64" width="28" height="28" style="vertical-align:middle;border-radius:6px;margin-right:8px">Google Flow <span style="font-size:12px;color:var(--accent2);font-weight:normal">(Beta)</span></h3>
+        <p>Google AI 영상/이미지 생성 - 영상 편집, 이미지 생성, 음악 비디오</p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+          <div style="text-align:center">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://play.google.com/store/apps/details?id=com.google.android.apps.labs.whisk" width="140" height="140" style="border-radius:10px;background:white;padding:6px" alt="QR">
+            <div style="font-size:12px;color:var(--accent2);margin-top:6px;font-weight:600">🤖 안드로이드</div>
+          </div>
+          <div style="flex:1;min-width:150px;font-size:14px;color:var(--text2);line-height:2">
+            <strong style="color:var(--text)">폰에서 설치하기:</strong><br>
+            1. 폰 카메라로 QR 스캔<br>
+            2. Play Store에서 "설치" 누르기<br>
+            3. 앱 열기 → Google 계정 로그인<br>
+            <span style="font-size:12px;color:var(--danger)">⚠ 아이폰 앱은 아직 없어요 (곧 출시 예정)</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ========== GUIDE PANEL (사용법 + 핫스팟 + 노트북 활용) ========== -->
@@ -799,6 +817,7 @@ const DEFAULT_BOOKMARKS = [
   { name: 'Gamma', url: 'https://gamma.app', icon: '', favicon: 'gamma.app' },
   { name: 'Perplexity', url: 'https://www.perplexity.ai', icon: '', favicon: 'www.perplexity.ai' },
   { name: 'Midjourney', url: 'https://www.midjourney.com', icon: '', favicon: 'www.midjourney.com' },
+  { name: 'Google Flow', url: 'https://flow.google.com', icon: '', favicon: 'flow.google.com' },
   { name: 'Grok', url: 'https://grok.com', icon: '', favicon: 'grok.com' },
   { name: 'CapCut', url: 'https://www.capcut.com', icon: '', favicon: 'www.capcut.com' },
   { name: 'NotebookLM', url: 'https://notebooklm.google.com', icon: '', favicon: 'notebooklm.google.com' },
@@ -1172,9 +1191,9 @@ function showToast(msg) {
 // ========== INIT ==========
 loadState();
 // 북마크를 항상 최신 기본값으로 교체 (v7)
-if (!state._bmVer || state._bmVer < 8) {
+if (!state._bmVer || state._bmVer < 9) {
   state.bookmarks = [...DEFAULT_BOOKMARKS];
-  state._bmVer = 8;
+  state._bmVer = 9;
   saveState();
 }
 state.openMode = 'popup'; // 항상 폰 크기 새 창으로 열기

@@ -1,4 +1,4 @@
-const CACHE = 'mobile-viewer-v14';
+const CACHE = 'mobile-viewer-v15';
 const ASSETS = [
   './',
   './index.html',
